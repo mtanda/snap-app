@@ -1,0 +1,7 @@
+{
+  "type": "datasource",
+  "name": "Snap DS",
+  "id": "raintank-snap-datasource",
+
+  "metrics": true
+}

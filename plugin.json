@@ -1,0 +1,26 @@
+{
+  "type": "app",
+  "name": "Snap App",
+  "id": "raintank-snap-app",
+
+  "staticRoot": ".",
+
+  "info": {
+    "description": "Snap Data Source and API UI",
+    "author": {
+      "name": "Raintank Inc.",
+      "url": "http://raintank.io"
+    },
+    "keywords": ["snap"],
+    "version": "1.0.0",
+    "updated": "2015-02-10"
+  },
+
+  "includes": [
+    {"type": "datasource", "name": "Snap DS"}
+  ],
+
+  "dependencies": {
+    "grafanaVersion": "3.x.x"
+  }
+}
