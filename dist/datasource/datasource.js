@@ -1,7 +1,7 @@
 'use strict';
 
 System.register(['vendor/npm/rxjs/Observable'], function (_export, _context) {
-  var Observable, _createClass, SnapDatasource;
+  var Observable, _createClass, StreamHandler, SnapDatasource;
 
   function _classCallCheck(instance, Constructor) {
     if (!(instance instanceof Constructor)) {
@@ -30,6 +30,63 @@ System.register(['vendor/npm/rxjs/Observable'], function (_export, _context) {
           if (staticProps) defineProperties(Constructor, staticProps);
           return Constructor;
         };
+      }();
+
+      StreamHandler = function () {
+        function StreamHandler() {
+          _classCallCheck(this, StreamHandler);
+        }
+
+        _createClass(StreamHandler, [{
+          key: 'start',
+          value: function start(observer, url) {
+            this.observer = observer;
+
+            console.log('StreamHandler: start: ' + url);
+            this.source = new EventSource(url);
+            this.source.onmessage = this.onMessage.bind(this);
+            this.source.onerror = this.onError.bind(this);
+            this.source.onopen = this.onOpen.bind(this);
+            this.source.onclose = this.onClose.bind(this);
+            this.metrics = [];
+          }
+        }, {
+          key: 'onMessage',
+          value: function onMessage(evt) {
+            var data = JSON.parse(evt.data);
+            if (data.type === 'metric-event') {
+              this.processMetricEvent(data);
+            }
+          }
+        }, {
+          key: 'onError',
+          value: function onError(evt) {
+            console.log('stream error', evt);
+          }
+        }, {
+          key: 'onClose',
+          value: function onClose(evt) {
+            console.log('stream closed', evt);
+          }
+        }, {
+          key: 'onOpen',
+          value: function onOpen(evt) {
+            console.log('stream opened', evt);
+          }
+        }, {
+          key: 'close',
+          value: function close() {
+            console.log('Forcing event stream close');
+            this.source.close();
+          }
+        }, {
+          key: 'processMetricEvent',
+          value: function processMetricEvent(event) {
+            console.log(event);
+          }
+        }]);
+
+        return StreamHandler;
       }();
 
       _export('SnapDatasource', SnapDatasource = function () {
@@ -67,48 +124,32 @@ System.register(['vendor/npm/rxjs/Observable'], function (_export, _context) {
         }, {
           key: 'query',
           value: function query(options) {
+            var _this = this;
+
             var target = options.targets[0];
             if (!target || !target.task || !target.task.id) {
               return this.emptyResult();
             }
 
-            var task = target.task;
-
             if (this.observable) {
-              if (task.id !== this.lastWatchId) {
-                this.subscription.unsubscribe();
-                this.subscription = null;
-                this.observable = null;
-              } else {
-                return this.emptyResult();
-              }
+              return this.emptyResult();
             }
+
+            var task = target.task;
 
             var watchUrl = this.url + '/v1/tasks/' + task.id + '/watch';
             this.observable = Observable.create(function (observer) {
 
-              var source = new EventSource(watchUrl);
-              source.onmessage = function (evt) {
-                console.log('event message', evt);
-              };
-              source.onopen = function (evt) {
-                console.log('open stream', evt);
-              };
-              source.onerror = function (evt) {
-                console.log('event error', evt);
-              };
+              var handler = new StreamHandler();
+              handler.start(observer, watchUrl);
 
               return function () {
-                console.log('closing event stream');
-                source.close();
+                handler.close();
+                _this.observable = null;
               };
             });
 
-            this.subscription = this.observable.subscribe(function (data) {
-              console.log('snap data', data);
-            });
-
-            return Promise.resolve({ data: [] });
+            return Promise.resolve(this.observable);
           }
         }]);
 

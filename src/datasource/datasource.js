@@ -1,6 +1,49 @@
 
 import {Observable} from 'vendor/npm/rxjs/Observable';
 
+class StreamHandler {
+
+  start(observer, url) {
+    this.observer = observer;
+
+    console.log('StreamHandler: start: ' + url);
+    this.source = new EventSource(url);
+    this.source.onmessage = this.onMessage.bind(this);
+    this.source.onerror = this.onError.bind(this);
+    this.source.onopen = this.onOpen.bind(this);
+    this.source.onclose = this.onClose.bind(this);
+    this.metrics = [];
+  }
+
+  onMessage(evt) {
+    var data = JSON.parse(evt.data);
+    if (data.type === 'metric-event') {
+      this.processMetricEvent(data);
+    }
+  }
+
+  onError(evt) {
+    console.log('stream error', evt);
+  }
+
+  onClose(evt) {
+    console.log('stream closed', evt);
+  }
+
+  onOpen(evt) {
+    console.log('stream opened', evt);
+  }
+
+  close() {
+    console.log('Forcing event stream close');
+    this.source.close();
+  }
+
+  processMetricEvent(event) {
+    console.log(event);
+  }
+}
+
 class SnapDatasource {
 
   constructor(instanceSettings, $http, backendSrv)  {
@@ -35,45 +78,26 @@ class SnapDatasource {
       return this.emptyResult();
     }
 
-    var task = target.task;
-
     if (this.observable) {
-      if (task.id !== this.lastWatchId) {
-        this.subscription.unsubscribe();
-        this.subscription = null;
-        this.observable = null;
-      } else {
-        return this.emptyResult();
-      }
+      return this.emptyResult();
     }
+
+    var task = target.task;
 
     var watchUrl = this.url + '/v1/tasks/' + task.id + '/watch';
     this.observable = Observable.create(observer => {
 
-      var source = new EventSource(watchUrl);
-      source.onmessage = function(evt) {
-        console.log('event message', evt);
-      };
-      source.onopen = function(evt) {
-        console.log('open stream', evt);
-      };
-      source.onerror = function(evt) {
-        console.log('event error', evt);
-      };
+      var handler = new StreamHandler();
+      handler.start(observer, watchUrl);
 
       return () => {
-        console.log('closing event stream');
-        source.close();
+        handler.close();
+        this.observable = null;
       };
     });
 
-    this.subscription = this.observable.subscribe(data => {
-      console.log('snap data', data);
-    });
-
-    return Promise.resolve({data: []});
+    return Promise.resolve(this.observable);
   }
-
 }
 
 export {SnapDatasource};

@@ -27,6 +27,7 @@
   "maxlen": 140,
 
   "globals": {
+    "EventSource": true,
     "System": true,
     "define": true,
     "require": true,
