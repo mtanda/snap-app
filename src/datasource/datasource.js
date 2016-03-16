@@ -1,4 +1,5 @@
 
+import moment from 'moment';
 import {Observable} from 'vendor/npm/rxjs/Observable';
 
 class StreamHandler {
@@ -12,7 +13,7 @@ class StreamHandler {
     this.source.onerror = this.onError.bind(this);
     this.source.onopen = this.onOpen.bind(this);
     this.source.onclose = this.onClose.bind(this);
-    this.metrics = [];
+    this.metrics = {};
   }
 
   onMessage(evt) {
@@ -39,8 +40,26 @@ class StreamHandler {
     this.source.close();
   }
 
-  processMetricEvent(event) {
-    console.log(event);
+  processMetricEvent(data) {
+    var endTime = new Date().getTime();
+    var startTime = endTime - (60 * 5 *1000)
+
+    for (var i = 0; i < data.event.length; i++) {
+      var point = data.event[i];
+      var series = this.metrics[point.namespace];
+      if (!series) {
+        series = {target: point.namespace, datapoints: []};
+        this.metrics[point.namespace] = series;
+      }
+
+      var time = new Date(point.timestamp).getTime();
+      series.datapoints.push([point.data, time]);
+    }
+
+    this.observer.next({
+      data: this.metrics,
+      range: {from: moment(startTime), to: moment(endTime)}
+    });
   }
 }
 

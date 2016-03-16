@@ -1,7 +1,7 @@
 'use strict';
 
-System.register(['vendor/npm/rxjs/Observable'], function (_export, _context) {
-  var Observable, _createClass, StreamHandler, SnapDatasource;
+System.register(['moment', 'vendor/npm/rxjs/Observable'], function (_export, _context) {
+  var moment, Observable, _createClass, StreamHandler, SnapDatasource;
 
   function _classCallCheck(instance, Constructor) {
     if (!(instance instanceof Constructor)) {
@@ -10,7 +10,9 @@ System.register(['vendor/npm/rxjs/Observable'], function (_export, _context) {
   }
 
   return {
-    setters: [function (_vendorNpmRxjsObservable) {
+    setters: [function (_moment) {
+      moment = _moment.default;
+    }, function (_vendorNpmRxjsObservable) {
       Observable = _vendorNpmRxjsObservable.Observable;
     }],
     execute: function () {
@@ -48,7 +50,7 @@ System.register(['vendor/npm/rxjs/Observable'], function (_export, _context) {
             this.source.onerror = this.onError.bind(this);
             this.source.onopen = this.onOpen.bind(this);
             this.source.onclose = this.onClose.bind(this);
-            this.metrics = [];
+            this.metrics = {};
           }
         }, {
           key: 'onMessage',
@@ -81,8 +83,26 @@ System.register(['vendor/npm/rxjs/Observable'], function (_export, _context) {
           }
         }, {
           key: 'processMetricEvent',
-          value: function processMetricEvent(event) {
-            console.log(event);
+          value: function processMetricEvent(data) {
+            var endTime = new Date().getTime();
+            var startTime = endTime - 60 * 5 * 1000;
+
+            for (var i = 0; i < data.event.length; i++) {
+              var point = data.event[i];
+              var series = this.metrics[point.namespace];
+              if (!series) {
+                series = { target: point.namespace, datapoints: [] };
+                this.metrics[point.namespace] = series;
+              }
+
+              var time = new Date(point.timestamp).getTime();
+              series.datapoints.push([point.data, time]);
+            }
+
+            this.observer.next({
+              data: this.metrics,
+              range: { from: moment(startTime), to: moment(endTime) }
+            });
           }
         }]);
 
