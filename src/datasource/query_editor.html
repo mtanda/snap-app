@@ -1,8 +1,8 @@
 <query-editor-row ctrl="ctrl">
 	<li class="tight-form-item">
-		Snap query
+		Snap task
 	</li>
 	<div class="tight-form-flex-wrapper">
-		<input type="text" class="input tight-form-clear-input" style="width: 100%" ng-model="ctrl.target.target"></input>
+		<metric-segment segment="ctrl.taskSegment" get-options="ctrl.getTasks()" on-change="ctrl.taskChanged()"></metric-segment>
 	</div>
 </query-editor-row>

@@ -1,7 +1,7 @@
 'use strict';
 
 System.register(['app/plugins/sdk'], function (_export, _context) {
-  var QueryCtrl, SnapQueryCtrl;
+  var QueryCtrl, _createClass, SnapQueryCtrl;
 
   function _classCallCheck(instance, Constructor) {
     if (!(instance instanceof Constructor)) {
@@ -38,14 +38,68 @@ System.register(['app/plugins/sdk'], function (_export, _context) {
       QueryCtrl = _appPluginsSdk.QueryCtrl;
     }],
     execute: function () {
+      _createClass = function () {
+        function defineProperties(target, props) {
+          for (var i = 0; i < props.length; i++) {
+            var descriptor = props[i];
+            descriptor.enumerable = descriptor.enumerable || false;
+            descriptor.configurable = true;
+            if ("value" in descriptor) descriptor.writable = true;
+            Object.defineProperty(target, descriptor.key, descriptor);
+          }
+        }
+
+        return function (Constructor, protoProps, staticProps) {
+          if (protoProps) defineProperties(Constructor.prototype, protoProps);
+          if (staticProps) defineProperties(Constructor, staticProps);
+          return Constructor;
+        };
+      }();
+
       _export('SnapQueryCtrl', SnapQueryCtrl = function (_QueryCtrl) {
         _inherits(SnapQueryCtrl, _QueryCtrl);
 
-        function SnapQueryCtrl($scope, $injector) {
+        function SnapQueryCtrl($scope, $injector, uiSegmentSrv) {
           _classCallCheck(this, SnapQueryCtrl);
 
-          return _possibleConstructorReturn(this, Object.getPrototypeOf(SnapQueryCtrl).call(this, $scope, $injector));
+          var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(SnapQueryCtrl).call(this, $scope, $injector));
+
+          _this.uiSegmentSrv = uiSegmentSrv;
+          _this.target.task = _this.target.task || { name: 'select task', id: '' };
+          _this.taskSegment = uiSegmentSrv.newSegment({
+            value: _this.target.task.name
+          });
+
+          if (_this.target.task.name === 'select task') {
+            _this.taskSegment.fake = true;
+          }
+          return _this;
         }
+
+        _createClass(SnapQueryCtrl, [{
+          key: 'getTasks',
+          value: function getTasks() {
+            var _this2 = this;
+
+            return this.datasource.getTasks().then(function (tasks) {
+              _this2.taskMap = {};
+
+              return tasks.map(function (task) {
+                _this2.taskMap[task.name] = task;
+
+                return _this2.uiSegmentSrv.newSegment({ value: task.name });
+              });
+            });
+          }
+        }, {
+          key: 'taskChanged',
+          value: function taskChanged() {
+            var task = this.taskMap[this.taskSegment.value];
+            this.target.task.name = task.name;
+            this.target.task.id = task.id;
+            this.panelCtrl.refresh();
+          }
+        }]);
 
         return SnapQueryCtrl;
       }(QueryCtrl));
