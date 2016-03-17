@@ -171,6 +171,27 @@ System.register(['moment', 'vendor/npm/rxjs/Observable'], function (_export, _co
 
             return Promise.resolve(this.observable);
           }
+        }, {
+          key: 'getMetrics',
+          value: function getMetrics() {
+            var _this2 = this;
+
+            if (this.metricsCache) {
+              return Promise.resolve(this.metricsCache);
+            }
+
+            return this.request({ method: 'get', url: '/v1/metrics' }).then(function (res) {
+              if (!res.data || !res.data.body || !res.data.body) {
+                return [];
+              }
+
+              _this2.metricsCache = res.data.body.map(function (value) {
+                return { text: value.namespace, value: value.namespace };
+              });
+
+              return _this2.metricsCache;
+            });
+          }
         }]);
 
         return SnapDatasource;

@@ -117,6 +117,24 @@ class SnapDatasource {
 
     return Promise.resolve(this.observable);
   }
+
+  getMetrics() {
+    if (this.metricsCache) {
+      return Promise.resolve(this.metricsCache);
+    }
+
+    return this.request({method: 'get', url: '/v1/metrics'}).then(res => {
+      if (!res.data || !res.data.body || !res.data.body) {
+        return [];
+      }
+
+      this.metricsCache = res.data.body.map(value => {
+        return {text: value.namespace, value: value.namespace};
+      });
+
+      return this.metricsCache;
+    });
+  }
 }
 
 export {SnapDatasource};

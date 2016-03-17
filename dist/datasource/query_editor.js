@@ -1,7 +1,7 @@
 'use strict';
 
-System.register(['app/plugins/sdk'], function (_export, _context) {
-  var QueryCtrl, _createClass, SnapQueryCtrl;
+System.register(['app/plugins/sdk', 'lodash'], function (_export, _context) {
+  var QueryCtrl, _, _createClass, SnapQueryCtrl;
 
   function _classCallCheck(instance, Constructor) {
     if (!(instance instanceof Constructor)) {
@@ -36,6 +36,8 @@ System.register(['app/plugins/sdk'], function (_export, _context) {
   return {
     setters: [function (_appPluginsSdk) {
       QueryCtrl = _appPluginsSdk.QueryCtrl;
+    }, function (_lodash) {
+      _ = _lodash.default;
     }],
     execute: function () {
       _createClass = function () {
@@ -65,18 +67,35 @@ System.register(['app/plugins/sdk'], function (_export, _context) {
           var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(SnapQueryCtrl).call(this, $scope, $injector));
 
           _this.uiSegmentSrv = uiSegmentSrv;
-          _this.target.task = _this.target.task || { name: 'select task', id: '' };
+
+          _this.target.mode = _this.target.mode || 'Watch Task';
+          _this.target.taskName = _this.target.taskName || 'select task';
+          _this.target.taskId = _this.target.taskId || '';
+          _this.target.metrics = _this.target.metrics || [];
+
           _this.taskSegment = uiSegmentSrv.newSegment({
-            value: _this.target.task.name
+            value: _this.target.taskName
           });
 
-          if (_this.target.task.name === 'select task') {
+          if (_this.target.taskName === 'select task') {
             _this.taskSegment.fake = true;
           }
+
+          _this.metricSegments = _this.target.metrics.map(function (item) {
+            return uiSegmentSrv.newSegment({ value: item.namespace, cssClass: 'last' });
+          });
+
+          _this.metricSegments.push(uiSegmentSrv.newPlusButton());
+          _this.removeMetricOption = uiSegmentSrv.newSegment({ fake: true, value: '-- remove metric --' });
           return _this;
         }
 
         _createClass(SnapQueryCtrl, [{
+          key: 'getModes',
+          value: function getModes() {
+            return Promise.resolve([this.uiSegmentSrv.newSegment({ value: 'Watch Task' }), this.uiSegmentSrv.newSegment({ value: 'Define Task' })]);
+          }
+        }, {
           key: 'getTasks',
           value: function getTasks() {
             var _this2 = this;
@@ -95,9 +114,48 @@ System.register(['app/plugins/sdk'], function (_export, _context) {
           key: 'taskChanged',
           value: function taskChanged() {
             var task = this.taskMap[this.taskSegment.value];
-            this.target.task.name = task.name;
-            this.target.task.id = task.id;
+            this.target.taskName = task.name;
+            this.target.taskId = task.id;
             this.panelCtrl.refresh();
+          }
+        }, {
+          key: 'getMetricSegments',
+          value: function getMetricSegments(segment) {
+            var _this3 = this;
+
+            return this.datasource.getMetrics().then(function (metrics) {
+              var elements = metrics.map(function (item) {
+                return _this3.uiSegmentSrv.newSegment({ value: item.value });
+              });
+
+              if (!segment.fake) {
+                elements.unshift(_.clone(_this3.removeMetricOption));
+              }
+
+              return elements;
+            });
+          }
+        }, {
+          key: 'metricSegmentChanged',
+          value: function metricSegmentChanged(segment, index) {
+            if (segment.value === this.removeMetricOption.value) {
+              this.metricSegments.splice(index, 1);
+            } else {
+              if (segment.type === 'plus-button') {
+                segment.type = '';
+              }
+
+              if (index + 1 === this.metricSegments.length) {
+                this.metricSegments.push(this.uiSegmentSrv.newPlusButton());
+              }
+            }
+
+            this.target.metrics = this.metricSegments.reduce(function (memo, item) {
+              if (!item.fake) {
+                memo.push({ namespace: item.value });
+              }
+              return memo;
+            }, []);
           }
         }]);
 

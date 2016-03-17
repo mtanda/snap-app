@@ -1,8 +1,28 @@
 <query-editor-row ctrl="ctrl">
-	<li class="tight-form-item">
-		Snap task
+
+	<li>
+		<metric-segment-model property="ctrl.target.mode" get-options="ctrl.getModes()" on-change="ctrl.modeChanged()" css-class="query-keyword"></metric-segment-model>
 	</li>
-	<div class="tight-form-flex-wrapper">
+
+	<li ng-if="ctrl.target.mode === 'Watch Task'">
 		<metric-segment segment="ctrl.taskSegment" get-options="ctrl.getTasks()" on-change="ctrl.taskChanged()"></metric-segment>
-	</div>
+	</li>
+
+	<li ng-if="ctrl.target.mode === 'Define Task'">
+		<input type="text" class="tight-form-input" style="width: 200px;" ng-model="ctrl.target.taskName" spellcheck='false' placeholder="Task name" ng-blur="ctrl.refresh()">
+	</li>
+
 </query-editor-row>
+
+<div class="tight-form" ng-repeat="segment in ctrl.metricSegments" ng-if="ctrl.target.mode === 'Define Task'">
+	<ul class="tight-form-list">
+		<li class="tight-form-item query-keyword tight-form-align" style="width: 79px;">
+			Metric
+		</li>
+		<li>
+			<metric-segment segment="segment" get-options="ctrl.getMetricSegments(segment, $index)" on-change="ctrl.metricSegmentChanged(segment, $index)"></metric-segment>
+		</li>
+	</ul>
+	<div class="clearfix"></div>
+</div>
+
