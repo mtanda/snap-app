@@ -8,13 +8,14 @@ class SnapQueryCtrl extends QueryCtrl {
     super($scope, $injector);
 
     this.uiSegmentSrv = uiSegmentSrv;
+    this.removeMetricOption = this.uiSegmentSrv.newSegment({fake: true, value: '-- remove metric --'});
 
     this.target.mode = this.target.mode || 'Watch Task';
     this.target.taskName = this.target.taskName || 'select task';
     this.target.taskId = this.target.taskId || '';
     this.target.metrics = this.target.metrics || [];
 
-    this.taskSegment = uiSegmentSrv.newSegment({
+    this.taskSegment = this.uiSegmentSrv.newSegment({
       value: this.target.taskName
     });
 
@@ -23,11 +24,10 @@ class SnapQueryCtrl extends QueryCtrl {
     }
 
     this.metricSegments = this.target.metrics.map(item => {
-      return uiSegmentSrv.newSegment({value: item.namespace, cssClass: 'last'});
+      return this.uiSegmentSrv.newSegment({value: item.namespace, cssClass: 'last'});
     });
 
-    this.metricSegments.push(uiSegmentSrv.newPlusButton());
-    this.removeMetricOption = uiSegmentSrv.newSegment({fake: true, value: '-- remove metric --'});
+    this.metricSegments.push(this.uiSegmentSrv.newPlusButton());
   }
 
   getModes() {
@@ -89,6 +89,16 @@ class SnapQueryCtrl extends QueryCtrl {
       }
       return memo;
     }, []);
+  }
+
+  deleteTask() {
+    this.datasource.deleteTask(this.target.taskId).then(() =>  {
+      this.target.taskId = null;
+      this.target.taskName = "";
+      this.taskSegment.value = 'select task';
+      this.taskSegment.html = 'select task';
+      this.taskSegment.fake = true;
+    });
   }
 }
 

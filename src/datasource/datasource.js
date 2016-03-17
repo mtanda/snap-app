@@ -91,31 +91,106 @@ class SnapDatasource {
     return Promise.resolve({data: []});
   }
 
-  query(options) {
-    var target = options.targets[0];
-    if (!target || !target.task || !target.task.id) {
-      return this.emptyResult();
+  getTask(taskId) {
+    return this.request({method: 'get', url: '/v1/tasks/' + taskId}).then(res => {
+      return res.data.body;
+    });
+  }
+
+  createTask(target) {
+    if (target.metrics.length === 0) {
+      return Promise.reject("No metrics selected for task");
     }
 
+    var task = {
+      version: 1,
+      name: target.taskName,
+      schedule: {
+        type: 'simple',
+        interval: '1s',
+      },
+      workflow: {
+        collect: {
+        }
+      },
+      publish: []
+    };
+
+    task.workflow.collect.metrics = target.metrics.reduce((memo, metric) => {
+      memo[metric.namespace] = {};
+      return memo;
+    }, {});
+
+    console.log('creating task', task);
+    return this.request({method: 'post', url: '/v1/tasks', data: task}).then(res => {
+      console.log('created task', res);
+      return res.data.body;
+    });
+  }
+
+  getTaskId(target) {
+    if (!target) {
+      return Promise.resolve(null);
+    }
+
+    switch (target.mode) {
+      case 'Watch Task': {
+        if (!target.taskId) {
+          return Promise.resolve(null);
+        }
+
+        return this.getTask(target.taskId).then(task => {
+          return task.id;
+        });
+      }
+      case  'Define Task': {
+        if (target.taskId) {
+          return this.getTask(target.taskId).then(task => {
+            return task.id;
+          });
+        }
+        return this.createTask(target).then(task => {
+          target.taskId = task.id;
+          return target.taskId;
+        });
+      }
+    }
+  }
+
+  query(options) {
     if (this.observable) {
       return this.emptyResult();
     }
 
-    var task = target.task;
+    if (this.runningQuery) {
+      return this.runningQuery;
+    }
 
-    var watchUrl = this.url + '/v1/tasks/' + task.id + '/watch';
-    this.observable = Observable.create(observer => {
+    var target = options.targets[0];
+    this.runningQuery = this.getTaskId(target).then(taskId => {
 
-      var handler = new StreamHandler();
-      handler.start(observer, watchUrl);
+      if (!taskId) {
+        return this.emptyResult();
+      }
 
-      return () => {
-        handler.close();
-        this.observable = null;
-      };
+      var watchUrl = this.url + '/v1/tasks/' + taskId + '/watch';
+      this.observable = Observable.create(observer => {
+
+        var handler = new StreamHandler();
+        handler.start(observer, watchUrl);
+
+        return () => {
+          handler.close();
+          this.observable = null;
+        };
+      });
+
+      return this.observable;
+    }).finally(() => {
+      this.runningQuery = null;
     });
 
-    return Promise.resolve(this.observable);
+    return this.runningQuery;
   }
 
   getMetrics() {
@@ -134,6 +209,10 @@ class SnapDatasource {
 
       return this.metricsCache;
     });
+  }
+
+  deleteTask(taskId) {
+    return this.request({method: 'delete', url: '/v1/tasks/' + taskId});
   }
 }
 

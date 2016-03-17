@@ -12,6 +12,11 @@
 		<input type="text" class="tight-form-input" style="width: 200px;" ng-model="ctrl.target.taskName" spellcheck='false' placeholder="Task name" ng-blur="ctrl.refresh()">
 	</li>
 
+	<li ng-if="ctrl.target.taskId" class="tight-form-item">
+		<button ng-click="ctrl.deleteTask()" class="btn btn-danger btn-mini">Delete</button>
+		<button ng-click="ctrl.stopTask()" class="btn btn-secondary btn-mini">Stop</button>
+	</li>
+
 </query-editor-row>
 
 <div class="tight-form" ng-repeat="segment in ctrl.metricSegments" ng-if="ctrl.target.mode === 'Define Task'">

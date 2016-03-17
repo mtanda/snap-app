@@ -142,34 +142,113 @@ System.register(['moment', 'vendor/npm/rxjs/Observable'], function (_export, _co
             return Promise.resolve({ data: [] });
           }
         }, {
+          key: 'getTask',
+          value: function getTask(taskId) {
+            return this.request({ method: 'get', url: '/v1/tasks/' + taskId }).then(function (res) {
+              return res.data.body;
+            });
+          }
+        }, {
+          key: 'createTask',
+          value: function createTask(target) {
+            if (target.metrics.length === 0) {
+              return Promise.reject("No metrics selected for task");
+            }
+
+            var task = {
+              version: 1,
+              name: target.taskName,
+              schedule: {
+                type: 'simple',
+                interval: '1s'
+              },
+              workflow: {
+                collect: {}
+              },
+              publish: []
+            };
+
+            task.workflow.collect.metrics = target.metrics.reduce(function (memo, metric) {
+              memo[metric.namespace] = {};
+              return memo;
+            }, {});
+
+            console.log('creating task', task);
+            return this.request({ method: 'post', url: '/v1/tasks', data: task }).then(function (res) {
+              console.log('created task', res);
+              return res.data.body;
+            });
+          }
+        }, {
+          key: 'getTaskId',
+          value: function getTaskId(target) {
+            if (!target) {
+              return Promise.resolve(null);
+            }
+
+            switch (target.mode) {
+              case 'Watch Task':
+                {
+                  if (!target.taskId) {
+                    return Promise.resolve(null);
+                  }
+
+                  return this.getTask(target.taskId).then(function (task) {
+                    return task.id;
+                  });
+                }
+              case 'Define Task':
+                {
+                  if (target.taskId) {
+                    return this.getTask(target.taskId).then(function (task) {
+                      return task.id;
+                    });
+                  }
+                  return this.createTask(target).then(function (task) {
+                    target.taskId = task.id;
+                    return target.taskId;
+                  });
+                }
+            }
+          }
+        }, {
           key: 'query',
           value: function query(options) {
             var _this = this;
-
-            var target = options.targets[0];
-            if (!target || !target.task || !target.task.id) {
-              return this.emptyResult();
-            }
 
             if (this.observable) {
               return this.emptyResult();
             }
 
-            var task = target.task;
+            if (this.runningQuery) {
+              return this.runningQuery;
+            }
 
-            var watchUrl = this.url + '/v1/tasks/' + task.id + '/watch';
-            this.observable = Observable.create(function (observer) {
+            var target = options.targets[0];
+            this.runningQuery = this.getTaskId(target).then(function (taskId) {
 
-              var handler = new StreamHandler();
-              handler.start(observer, watchUrl);
+              if (!taskId) {
+                return _this.emptyResult();
+              }
 
-              return function () {
-                handler.close();
-                _this.observable = null;
-              };
+              var watchUrl = _this.url + '/v1/tasks/' + taskId + '/watch';
+              _this.observable = Observable.create(function (observer) {
+
+                var handler = new StreamHandler();
+                handler.start(observer, watchUrl);
+
+                return function () {
+                  handler.close();
+                  _this.observable = null;
+                };
+              });
+
+              return _this.observable;
+            }).finally(function () {
+              _this.runningQuery = null;
             });
 
-            return Promise.resolve(this.observable);
+            return this.runningQuery;
           }
         }, {
           key: 'getMetrics',
@@ -191,6 +270,11 @@ System.register(['moment', 'vendor/npm/rxjs/Observable'], function (_export, _co
 
               return _this2.metricsCache;
             });
+          }
+        }, {
+          key: 'deleteTask',
+          value: function deleteTask(taskId) {
+            return this.request({ method: 'delete', url: '/v1/tasks/' + taskId });
           }
         }]);
 

@@ -67,13 +67,14 @@ System.register(['app/plugins/sdk', 'lodash'], function (_export, _context) {
           var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(SnapQueryCtrl).call(this, $scope, $injector));
 
           _this.uiSegmentSrv = uiSegmentSrv;
+          _this.removeMetricOption = _this.uiSegmentSrv.newSegment({ fake: true, value: '-- remove metric --' });
 
           _this.target.mode = _this.target.mode || 'Watch Task';
           _this.target.taskName = _this.target.taskName || 'select task';
           _this.target.taskId = _this.target.taskId || '';
           _this.target.metrics = _this.target.metrics || [];
 
-          _this.taskSegment = uiSegmentSrv.newSegment({
+          _this.taskSegment = _this.uiSegmentSrv.newSegment({
             value: _this.target.taskName
           });
 
@@ -82,11 +83,10 @@ System.register(['app/plugins/sdk', 'lodash'], function (_export, _context) {
           }
 
           _this.metricSegments = _this.target.metrics.map(function (item) {
-            return uiSegmentSrv.newSegment({ value: item.namespace, cssClass: 'last' });
+            return _this.uiSegmentSrv.newSegment({ value: item.namespace, cssClass: 'last' });
           });
 
-          _this.metricSegments.push(uiSegmentSrv.newPlusButton());
-          _this.removeMetricOption = uiSegmentSrv.newSegment({ fake: true, value: '-- remove metric --' });
+          _this.metricSegments.push(_this.uiSegmentSrv.newPlusButton());
           return _this;
         }
 
@@ -156,6 +156,19 @@ System.register(['app/plugins/sdk', 'lodash'], function (_export, _context) {
               }
               return memo;
             }, []);
+          }
+        }, {
+          key: 'deleteTask',
+          value: function deleteTask() {
+            var _this4 = this;
+
+            this.datasource.deleteTask(this.target.taskId).then(function () {
+              _this4.target.taskId = null;
+              _this4.target.taskName = "";
+              _this4.taskSegment.value = 'select task';
+              _this4.taskSegment.html = 'select task';
+              _this4.taskSegment.fake = true;
+            });
           }
         }]);
 
