@@ -87,6 +87,8 @@ System.register(['app/plugins/sdk', 'lodash'], function (_export, _context) {
           });
 
           _this.metricSegments.push(_this.uiSegmentSrv.newPlusButton());
+
+          _this.getTaskInfo();
           return _this;
         }
 
@@ -169,6 +171,49 @@ System.register(['app/plugins/sdk', 'lodash'], function (_export, _context) {
               _this4.taskSegment.html = 'select task';
               _this4.taskSegment.fake = true;
             });
+          }
+        }, {
+          key: 'createTask',
+          value: function createTask() {
+            var _this5 = this;
+
+            this.datasource.createTask(this.target).then(function (task) {
+              _this5.target.taskId = task.id;
+              _this5.getTaskInfo();
+            });
+          }
+        }, {
+          key: 'getTaskInfo',
+          value: function getTaskInfo() {
+            var _this6 = this;
+
+            if (!this.target.taskId) {
+              return;
+            }
+
+            this.datasource.getTask(this.target.taskId).then(function (task) {
+              if (!task) {
+                _this6.task = null;
+                _this6.target.taskId = '';
+                _this6.taskNotFound = true;
+                return;
+              }
+
+              _this6.taskNotFound = false;
+              _this6.task = task;
+              _this6.isRunning = task.task_state === 'Running';
+              _this6.isStopped = task.task_state === 'Stopped';
+            });
+          }
+        }, {
+          key: 'startTask',
+          value: function startTask() {
+            this.datasource.startTask(this.target.taskId).then(this.getTaskInfo.bind(this));
+          }
+        }, {
+          key: 'watchTask',
+          value: function watchTask() {
+            this.panelCtrl.dataSubject.start();
           }
         }]);
 

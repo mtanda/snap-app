@@ -28,6 +28,8 @@ class SnapQueryCtrl extends QueryCtrl {
     });
 
     this.metricSegments.push(this.uiSegmentSrv.newPlusButton());
+
+    this.getTaskInfo();
   }
 
   getModes() {
@@ -99,6 +101,42 @@ class SnapQueryCtrl extends QueryCtrl {
       this.taskSegment.html = 'select task';
       this.taskSegment.fake = true;
     });
+  }
+
+  createTask() {
+    this.datasource.createTask(this.target).then(task =>  {
+      this.target.taskId = task.id;
+      this.getTaskInfo();
+    });
+  }
+
+  getTaskInfo() {
+    if (!this.target.taskId) {
+      return;
+    }
+
+    this.datasource.getTask(this.target.taskId).then(task =>  {
+      if (!task) {
+        this.task = null;
+        this.target.taskId = '';
+        this.taskNotFound = true;
+        return;
+      }
+
+      this.taskNotFound = false;
+      this.task = task;
+      this.isRunning = task.task_state === 'Running';
+      this.isStopped = task.task_state === 'Stopped';
+    });
+  }
+
+  startTask() {
+    this.datasource.startTask(this.target.taskId)
+      .then(this.getTaskInfo.bind(this));
+  }
+
+  watchTask() {
+    this.panelCtrl.dataSubject.start();
   }
 }
 
