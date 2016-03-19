@@ -98,10 +98,11 @@ System.register(['moment', 'vendor/npm/rxjs/Subject'], function (_export, _conte
             console.log('stream opened', evt);
           }
         }, {
-          key: 'close',
-          value: function close() {
+          key: 'taskStopped',
+          value: function taskStopped() {
             console.log('Forcing event stream close');
             this.source.close();
+            this.source = null;
           }
         }, {
           key: 'subscribe',

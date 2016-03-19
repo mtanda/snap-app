@@ -92,7 +92,7 @@ System.register(['moment', './stream_handler'], function (_export, _context) {
               name: target.taskName,
               schedule: {
                 type: 'simple',
-                interval: '1s'
+                interval: '200ms'
               },
               workflow: {
                 collect: {}
@@ -188,7 +188,7 @@ System.register(['moment', './stream_handler'], function (_export, _context) {
         }, {
           key: 'stopTask',
           value: function stopTask(taskId) {
-            return this.request({ method: 'delete', url: '/v1/tasks/' + taskId + '/stop' });
+            return this.request({ method: 'put', url: '/v1/tasks/' + taskId + '/stop' });
           }
         }]);
 

@@ -14,9 +14,11 @@ class SnapQueryCtrl extends QueryCtrl {
     this.target.taskName = this.target.taskName || 'select task';
     this.target.taskId = this.target.taskId || '';
     this.target.metrics = this.target.metrics || [];
+    this.target.interval = this.target.interval || '1s';
 
     this.taskSegment = this.uiSegmentSrv.newSegment({
-      value: this.target.taskName
+      value: this.target.taskName,
+      cssClass: "tight-form-item-xxlarge",
     });
 
     if (this.target.taskName === 'select task') {
@@ -28,15 +30,7 @@ class SnapQueryCtrl extends QueryCtrl {
     });
 
     this.metricSegments.push(this.uiSegmentSrv.newPlusButton());
-
     this.getTaskInfo();
-  }
-
-  getModes() {
-    return Promise.resolve([
-        this.uiSegmentSrv.newSegment({value: 'Watch Task'}),
-        this.uiSegmentSrv.newSegment({value: 'Define Task'}),
-    ]);
   }
 
   getTasks() {
@@ -55,7 +49,7 @@ class SnapQueryCtrl extends QueryCtrl {
     var task = this.taskMap[this.taskSegment.value];
     this.target.taskName = task.name;
     this.target.taskId = task.id;
-    this.panelCtrl.refresh();
+    this.getTaskInfo();
   }
 
   getMetricSegments(segment) {
@@ -100,6 +94,9 @@ class SnapQueryCtrl extends QueryCtrl {
       this.taskSegment.value = 'select task';
       this.taskSegment.html = 'select task';
       this.taskSegment.fake = true;
+      this.taskNotFound = true;
+      this.task = null;
+      this.isRunning = false;
     });
   }
 
@@ -112,6 +109,7 @@ class SnapQueryCtrl extends QueryCtrl {
 
   getTaskInfo() {
     if (!this.target.taskId) {
+      this.taskNotFound = true;
       return;
     }
 
@@ -132,6 +130,12 @@ class SnapQueryCtrl extends QueryCtrl {
 
   startTask() {
     this.datasource.startTask(this.target.taskId)
+      .then(this.getTaskInfo.bind(this));
+  }
+
+  stopTask() {
+    this.panelCtrl.dataSubject.taskStopped();
+    this.datasource.stopTask(this.target.taskId)
       .then(this.getTaskInfo.bind(this));
   }
 

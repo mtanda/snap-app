@@ -56,9 +56,10 @@ export class StreamHandler {
     console.log('stream opened', evt);
   }
 
-  close() {
+  taskStopped() {
     console.log('Forcing event stream close');
     this.source.close();
+    this.source = null;
   }
 
   subscribe(options) {

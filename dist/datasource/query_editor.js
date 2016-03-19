@@ -73,9 +73,11 @@ System.register(['app/plugins/sdk', 'lodash'], function (_export, _context) {
           _this.target.taskName = _this.target.taskName || 'select task';
           _this.target.taskId = _this.target.taskId || '';
           _this.target.metrics = _this.target.metrics || [];
+          _this.target.interval = _this.target.interval || '1s';
 
           _this.taskSegment = _this.uiSegmentSrv.newSegment({
-            value: _this.target.taskName
+            value: _this.target.taskName,
+            cssClass: "tight-form-item-xxlarge"
           });
 
           if (_this.target.taskName === 'select task') {
@@ -87,17 +89,11 @@ System.register(['app/plugins/sdk', 'lodash'], function (_export, _context) {
           });
 
           _this.metricSegments.push(_this.uiSegmentSrv.newPlusButton());
-
           _this.getTaskInfo();
           return _this;
         }
 
         _createClass(SnapQueryCtrl, [{
-          key: 'getModes',
-          value: function getModes() {
-            return Promise.resolve([this.uiSegmentSrv.newSegment({ value: 'Watch Task' }), this.uiSegmentSrv.newSegment({ value: 'Define Task' })]);
-          }
-        }, {
           key: 'getTasks',
           value: function getTasks() {
             var _this2 = this;
@@ -118,7 +114,7 @@ System.register(['app/plugins/sdk', 'lodash'], function (_export, _context) {
             var task = this.taskMap[this.taskSegment.value];
             this.target.taskName = task.name;
             this.target.taskId = task.id;
-            this.panelCtrl.refresh();
+            this.getTaskInfo();
           }
         }, {
           key: 'getMetricSegments',
@@ -170,6 +166,9 @@ System.register(['app/plugins/sdk', 'lodash'], function (_export, _context) {
               _this4.taskSegment.value = 'select task';
               _this4.taskSegment.html = 'select task';
               _this4.taskSegment.fake = true;
+              _this4.taskNotFound = true;
+              _this4.task = null;
+              _this4.isRunning = false;
             });
           }
         }, {
@@ -188,6 +187,7 @@ System.register(['app/plugins/sdk', 'lodash'], function (_export, _context) {
             var _this6 = this;
 
             if (!this.target.taskId) {
+              this.taskNotFound = true;
               return;
             }
 
@@ -209,6 +209,12 @@ System.register(['app/plugins/sdk', 'lodash'], function (_export, _context) {
           key: 'startTask',
           value: function startTask() {
             this.datasource.startTask(this.target.taskId).then(this.getTaskInfo.bind(this));
+          }
+        }, {
+          key: 'stopTask',
+          value: function stopTask() {
+            this.panelCtrl.dataSubject.taskStopped();
+            this.datasource.stopTask(this.target.taskId).then(this.getTaskInfo.bind(this));
           }
         }, {
           key: 'watchTask',

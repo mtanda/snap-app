@@ -53,7 +53,7 @@ export class SnapDatasource {
       name: target.taskName,
       schedule: {
         type: 'simple',
-        interval: '1s',
+        interval: '200ms',
       },
       workflow: {
         collect: {
@@ -168,7 +168,7 @@ export class SnapDatasource {
   }
 
   stopTask(taskId) {
-    return this.request({method: 'delete', url: '/v1/tasks/' + taskId + '/stop'});
+    return this.request({method: 'put', url: '/v1/tasks/' + taskId + '/stop'});
   }
 
 }
