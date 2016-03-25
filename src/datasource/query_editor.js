@@ -51,7 +51,8 @@ class SnapQueryCtrl extends QueryCtrl {
       this.target.taskId = task.id;
       this.getTaskInfo();
     } else {
-      task.target.taskId = '';
+      this.target.taskId = '';
+      this.target.taskName = this.taskSegment.value;
     }
   }
 

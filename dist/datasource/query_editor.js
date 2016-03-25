@@ -116,7 +116,8 @@ System.register(['app/plugins/sdk', 'lodash'], function (_export, _context) {
               this.target.taskId = task.id;
               this.getTaskInfo();
             } else {
-              task.target.taskId = '';
+              this.target.taskId = '';
+              this.target.taskName = this.taskSegment.value;
             }
           }
         }, {
