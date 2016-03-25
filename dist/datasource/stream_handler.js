@@ -98,8 +98,8 @@ System.register(['moment', 'vendor/npm/rxjs/Subject'], function (_export, _conte
             console.log('stream opened', evt);
           }
         }, {
-          key: 'taskStopped',
-          value: function taskStopped() {
+          key: 'stop',
+          value: function stop() {
             console.log('Forcing event stream close');
             this.source.close();
             this.source = null;
@@ -114,6 +114,7 @@ System.register(['moment', 'vendor/npm/rxjs/Subject'], function (_export, _conte
           value: function processMetricEvent(data) {
             var endTime = new Date().getTime();
             var startTime = endTime - 60 * 5 * 1000;
+            var seriesList = [];
 
             for (var i = 0; i < data.event.length; i++) {
               var point = data.event[i];
@@ -125,10 +126,11 @@ System.register(['moment', 'vendor/npm/rxjs/Subject'], function (_export, _conte
 
               var time = new Date(point.timestamp).getTime();
               series.datapoints.push([point.data, time]);
+              seriesList.push(series);
             }
 
             this.subject.next({
-              data: this.metrics,
+              data: seriesList,
               range: { from: moment(startTime), to: moment(endTime) }
             });
           }

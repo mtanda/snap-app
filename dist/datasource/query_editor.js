@@ -69,7 +69,6 @@ System.register(['app/plugins/sdk', 'lodash'], function (_export, _context) {
           _this.uiSegmentSrv = uiSegmentSrv;
           _this.removeMetricOption = _this.uiSegmentSrv.newSegment({ fake: true, value: '-- remove metric --' });
 
-          _this.target.mode = _this.target.mode || 'Watch Task';
           _this.target.taskName = _this.target.taskName || 'select task';
           _this.target.taskId = _this.target.taskId || '';
           _this.target.metrics = _this.target.metrics || [];
@@ -112,9 +111,13 @@ System.register(['app/plugins/sdk', 'lodash'], function (_export, _context) {
           key: 'taskChanged',
           value: function taskChanged() {
             var task = this.taskMap[this.taskSegment.value];
-            this.target.taskName = task.name;
-            this.target.taskId = task.id;
-            this.getTaskInfo();
+            if (task) {
+              this.target.taskName = task.name;
+              this.target.taskId = task.id;
+              this.getTaskInfo();
+            } else {
+              task.target.taskId = '';
+            }
           }
         }, {
           key: 'getMetricSegments',
@@ -198,7 +201,6 @@ System.register(['app/plugins/sdk', 'lodash'], function (_export, _context) {
                 _this6.taskNotFound = true;
                 return;
               }
-
               _this6.taskNotFound = false;
               _this6.task = task;
               _this6.isRunning = task.task_state === 'Running';
@@ -213,13 +215,13 @@ System.register(['app/plugins/sdk', 'lodash'], function (_export, _context) {
         }, {
           key: 'stopTask',
           value: function stopTask() {
-            this.panelCtrl.dataSubject.taskStopped();
+            this.panelCtrl.dataStream.stop();
             this.datasource.stopTask(this.target.taskId).then(this.getTaskInfo.bind(this));
           }
         }, {
           key: 'watchTask',
           value: function watchTask() {
-            this.panelCtrl.dataSubject.start();
+            this.panelCtrl.dataStream.start();
           }
         }]);
 

@@ -92,7 +92,7 @@ System.register(['moment', './stream_handler'], function (_export, _context) {
               name: target.taskName,
               schedule: {
                 type: 'simple',
-                interval: '200ms'
+                interval: target.interval
               },
               workflow: {
                 collect: {}

@@ -10,7 +10,6 @@ class SnapQueryCtrl extends QueryCtrl {
     this.uiSegmentSrv = uiSegmentSrv;
     this.removeMetricOption = this.uiSegmentSrv.newSegment({fake: true, value: '-- remove metric --'});
 
-    this.target.mode = this.target.mode || 'Watch Task';
     this.target.taskName = this.target.taskName || 'select task';
     this.target.taskId = this.target.taskId || '';
     this.target.metrics = this.target.metrics || [];
@@ -47,9 +46,13 @@ class SnapQueryCtrl extends QueryCtrl {
 
   taskChanged() {
     var task = this.taskMap[this.taskSegment.value];
-    this.target.taskName = task.name;
-    this.target.taskId = task.id;
-    this.getTaskInfo();
+    if (task) {
+      this.target.taskName = task.name;
+      this.target.taskId = task.id;
+      this.getTaskInfo();
+    } else {
+      task.target.taskId = '';
+    }
   }
 
   getMetricSegments(segment) {
@@ -120,7 +123,6 @@ class SnapQueryCtrl extends QueryCtrl {
         this.taskNotFound = true;
         return;
       }
-
       this.taskNotFound = false;
       this.task = task;
       this.isRunning = task.task_state === 'Running';
@@ -134,13 +136,13 @@ class SnapQueryCtrl extends QueryCtrl {
   }
 
   stopTask() {
-    this.panelCtrl.dataSubject.taskStopped();
+    this.panelCtrl.dataStream.stop();
     this.datasource.stopTask(this.target.taskId)
       .then(this.getTaskInfo.bind(this));
   }
 
   watchTask() {
-    this.panelCtrl.dataSubject.start();
+    this.panelCtrl.dataStream.start();
   }
 }
 

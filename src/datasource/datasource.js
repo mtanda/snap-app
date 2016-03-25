@@ -53,7 +53,7 @@ export class SnapDatasource {
       name: target.taskName,
       schedule: {
         type: 'simple',
-        interval: '200ms',
+        interval: target.interval,
       },
       workflow: {
         collect: {
