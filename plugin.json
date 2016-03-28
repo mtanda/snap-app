@@ -12,8 +12,17 @@
       "url": "http://raintank.io"
     },
     "keywords": ["snap"],
-    "version": "1.0.0",
-    "updated": "2015-02-10"
+    "version": "0.0.2",
+    "updated": "2016-03-28",
+    "logos": {
+      "small": "img/snap-small.png",
+      "large": "img/snap-large.png"
+    },
+    "links": [
+      {"name": "GitHub", "url": "https://github.com/raintank/snap-app"},
+      {"name": "Snap", "url": "https://github.com/intelsdi-x/snap"},
+      {"name": "License", "url": "https://github.com/raintank/snap-app/blob/master/LICENSE"}
+    ]
   },
 
   "includes": [
