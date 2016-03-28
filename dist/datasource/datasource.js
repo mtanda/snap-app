@@ -90,6 +90,7 @@ System.register(['moment', './stream_handler'], function (_export, _context) {
             var task = {
               version: 1,
               name: target.taskName,
+              start: true,
               schedule: {
                 type: 'simple',
                 interval: target.interval
