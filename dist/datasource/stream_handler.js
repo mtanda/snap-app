@@ -101,7 +101,9 @@ System.register(['moment', 'vendor/npm/rxjs/Subject'], function (_export, _conte
           key: 'stop',
           value: function stop() {
             console.log('Forcing event stream close');
-            this.source.close();
+            if (this.source) {
+              this.source.close();
+            }
             this.source = null;
           }
         }, {

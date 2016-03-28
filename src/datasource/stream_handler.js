@@ -58,7 +58,9 @@ export class StreamHandler {
 
   stop() {
     console.log('Forcing event stream close');
-    this.source.close();
+    if (this.source) {
+        this.source.close();
+    }
     this.source = null;
   }
 
