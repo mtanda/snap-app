@@ -16,16 +16,22 @@ module.exports = function(grunt) {
         src: ['**/*', '!**/*.js'],
         dest: 'dist'
       },
+      img_to_dist: {
+        cwd: 'src',
+        expand: true,
+        src: ['img/*'],
+        dest: 'dist/src/'
+      },
       other: {
         expand: true,
-        src: ['plugin.json', 'readme.md'],
+        src: ['plugin.json', 'README.md'],
         dest: 'dist',
       }
     },
 
     watch: {
       rebuild_all: {
-        files: ['src/**/*', 'plugin.json', 'readme.md'],
+        files: ['src/**/*', 'plugin.json', 'README.md'],
         tasks: ['default'],
         options: {spawn: false}
       },
