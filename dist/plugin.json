@@ -15,8 +15,8 @@
     "version": "0.0.2",
     "updated": "2016-03-28",
     "logos": {
-      "small": "img/snap-small.png",
-      "large": "img/snap-large.png"
+      "small": "src/img/snap-small.png",
+      "large": "src/img/snap-large.png"
     },
     "links": [
       {"name": "GitHub", "url": "https://github.com/raintank/snap-app"},
