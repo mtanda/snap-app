@@ -115,7 +115,7 @@ System.register(['moment', 'vendor/npm/rxjs/Subject'], function (_export, _conte
           key: 'processMetricEvent',
           value: function processMetricEvent(data) {
             var endTime = new Date().getTime();
-            var startTime = endTime - 60 * 5 * 1000;
+            var startTime = endTime - 60 * 1 * 1000;
             var seriesList = [];
 
             for (var i = 0; i < data.event.length; i++) {
