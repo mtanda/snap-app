@@ -1,6 +1,6 @@
 {
   "type": "app",
-  "name": "Snap App",
+  "name": "Snap",
   "id": "raintank-snap-app",
 
   "staticRoot": ".",
