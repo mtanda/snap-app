@@ -2,7 +2,7 @@ import {QueryCtrl} from 'app/plugins/sdk';
 
 import _ from 'lodash';
 
-class SnapQueryCtrl extends QueryCtrl {
+class PrometheusPullQueryCtrl extends QueryCtrl {
 
   constructor($scope, $injector, uiSegmentSrv) {
     super($scope, $injector);
@@ -147,5 +147,5 @@ class SnapQueryCtrl extends QueryCtrl {
   }
 }
 
-SnapQueryCtrl.templateUrl = 'datasource/query_editor.html';
-export {SnapQueryCtrl};
+PrometheusPullQueryCtrl.templateUrl = 'datasource/query_editor.html';
+export {PrometheusPullQueryCtrl};

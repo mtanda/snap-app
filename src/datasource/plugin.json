@@ -1,7 +1,31 @@
 {
   "type": "datasource",
-  "name": "Snap DS",
-  "id": "raintank-snap-datasource",
+  "name": "Prometheus Pull",
+  "id": "prometheus-pull",
 
-  "metrics": true
+  "staticRoot": ".",
+
+  "partials": {
+    "config": "public/app/plugins/datasource/prometheus-pull/partials/config.html"
+  },
+
+  "metrics": true,
+
+  "info": {
+          "description": "Prometheus pull datasource",
+          "author": {
+                  "name": "Mitsuhiro Tanda"
+          },
+          "links": [
+                  {"name": "GitHub", "url": "https://github.com/mtanda/datasource-plugin-prometheus-pull"},
+                  {"name": "MIT License", "url": "https://github.com/mtanda/datasource-plugin-prometheus-pull/blob/master/LICENSE"}
+          ],
+          "version": "1.0.0",
+          "updated": "2016-04-07"
+  },
+
+  "dependencies": {
+          "grafanaVersion": "3.x.x",
+          "plugins": [ ]
+  }
 }

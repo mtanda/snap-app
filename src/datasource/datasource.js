@@ -2,7 +2,7 @@
 import moment from 'moment';
 import {StreamHandler} from './stream_handler';
 
-export class SnapDatasource {
+export class PrometheusPullDatasource {
 
   constructor(instanceSettings, $http, backendSrv)  {
     this.instanceSettings = instanceSettings;

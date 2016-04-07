@@ -1,9 +1,9 @@
-import {SnapDatasource} from './datasource';
+import {PrometheusPullDatasource} from './datasource';
 import {ConfigCtrl} from './config';
-import {SnapQueryCtrl} from './query_editor';
+import {PrometheusPullQueryCtrl} from './query_editor';
 
 export {
-  SnapDatasource as Datasource,
+  PrometheusPullDatasource as Datasource,
   ConfigCtrl as ConfigCtrl,
-  SnapQueryCtrl as QueryCtrl
+  PrometheusPullQueryCtrl as QueryCtrl
 };
