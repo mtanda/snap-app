@@ -16,10 +16,6 @@ export class PrometheusPullDatasource {
     return this.backendSrv.datasourceRequest(options);
   }
 
-  emptyResult() {
-    return Promise.resolve({data: []});
-  }
-
   getMetricEntries() {
     return this.request({method: 'get', url: '/metrics'}).then(res => {
       return res.data.body.split(/\n/).filter(function(l) {
@@ -34,6 +30,10 @@ export class PrometheusPullDatasource {
         throw err;
       }
     });
+  }
+
+  emptyResult() {
+    return Promise.resolve({data: []});
   }
 
   query(options) {
