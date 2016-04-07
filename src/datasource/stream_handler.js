@@ -16,7 +16,7 @@ export class StreamHandler {
 
     var target = this.options.targets[0];
 
-    console.log('StreamHandler: start()', task);
+    console.log('StreamHandler: start()');
 
     var watchUrl = this.ds.url + '/metrics';
     this.source = new EventSource(watchUrl);
