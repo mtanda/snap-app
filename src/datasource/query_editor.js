@@ -10,26 +10,14 @@ class PrometheusPullQueryCtrl extends QueryCtrl {
     this.uiSegmentSrv = uiSegmentSrv;
     this.removeMetricOption = this.uiSegmentSrv.newSegment({fake: true, value: '-- remove metric --'});
 
-    this.target.taskName = this.target.taskName || 'select task';
-    this.target.taskId = this.target.taskId || '';
     this.target.metrics = this.target.metrics || [];
     this.target.interval = this.target.interval || '1s';
-
-    this.taskSegment = this.uiSegmentSrv.newSegment({
-      value: this.target.taskName,
-      cssClass: "tight-form-item-xxlarge",
-    });
-
-    if (this.target.taskName === 'select task') {
-      this.taskSegment.fake = true;
-    }
 
     this.metricSegments = this.target.metrics.map(item => {
       return this.uiSegmentSrv.newSegment({value: item.namespace, cssClass: 'last'});
     });
 
     this.metricSegments.push(this.uiSegmentSrv.newPlusButton());
-    this.getTaskInfo();
   }
 
   getMetricSegments(segment) {
