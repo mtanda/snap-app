@@ -32,30 +32,6 @@ class PrometheusPullQueryCtrl extends QueryCtrl {
     this.getTaskInfo();
   }
 
-  getTasks() {
-    return this.datasource.getTasks().then(tasks => {
-      this.taskMap = {};
-
-      return tasks.map(task => {
-        this.taskMap[task.name] = task;
-
-        return this.uiSegmentSrv.newSegment({value: task.name});
-      });
-    });
-  }
-
-  taskChanged() {
-    var task = this.taskMap[this.taskSegment.value];
-    if (task) {
-      this.target.taskName = task.name;
-      this.target.taskId = task.id;
-      this.getTaskInfo();
-    } else {
-      this.target.taskId = '';
-      this.target.taskName = this.taskSegment.value;
-    }
-  }
-
   getMetricSegments(segment) {
     return this.datasource.getMetrics().then(metrics => {
       var elements = metrics.map(item => {
@@ -89,52 +65,6 @@ class PrometheusPullQueryCtrl extends QueryCtrl {
       }
       return memo;
     }, []);
-  }
-
-  deleteTask() {
-    this.datasource.deleteTask(this.target.taskId).then(() =>  {
-      this.target.taskId = null;
-      this.target.taskName = "";
-      this.taskSegment.value = 'select task';
-      this.taskSegment.html = 'select task';
-      this.taskSegment.fake = true;
-      this.taskNotFound = true;
-      this.task = null;
-      this.isRunning = false;
-    });
-  }
-
-  createTask() {
-    this.datasource.createTask(this.target).then(task =>  {
-      this.target.taskId = task.id;
-      this.getTaskInfo();
-    });
-  }
-
-  getTaskInfo() {
-    if (!this.target.taskId) {
-      this.taskNotFound = true;
-      return;
-    }
-
-    this.datasource.getMetrics().then(metrics =>  {
-      this.task = metrics;
-    });
-  }
-
-  startTask() {
-    this.datasource.startTask(this.target.taskId)
-      .then(this.getTaskInfo.bind(this));
-  }
-
-  stopTask() {
-    this.panelCtrl.dataStream.stop();
-    this.datasource.stopTask(this.target.taskId)
-      .then(this.getTaskInfo.bind(this));
-  }
-
-  watchTask() {
-    this.panelCtrl.dataStream.start();
   }
 }
 
