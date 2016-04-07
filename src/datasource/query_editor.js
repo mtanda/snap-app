@@ -147,5 +147,5 @@ class PrometheusPullQueryCtrl extends QueryCtrl {
   }
 }
 
-PrometheusPullQueryCtrl.templateUrl = 'datasource/query_editor.html';
+PrometheusPullQueryCtrl.templateUrl = './query_editor.html';
 export {PrometheusPullQueryCtrl};

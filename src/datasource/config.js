@@ -1,4 +1,4 @@
 export class ConfigCtrl {}
-ConfigCtrl.templateUrl = 'datasource/config.html'
+ConfigCtrl.templateUrl = './config.html'
 
 
