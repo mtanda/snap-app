@@ -1,19 +1,11 @@
 <query-editor-row ctrl="ctrl">
 
-	<li class="tight-form-item query-keyword" style="width: 79px;">
-		Task name
-	</li>
-
-	<li>
-		<metric-segment segment="ctrl.taskSegment" get-options="ctrl.getTasks()" on-change="ctrl.taskChanged()"></metric-segment>
-	</li>
-
 	<li class="tight-form-item query-keyword">
 		Interval
 	</li>
 
 	<li>
-		<input type="text" class="tight-form-input" style="width: 100px;" ng-model="ctrl.target.interval" spellcheck='false' placeholder="1s" ng-blur="ctrl.intervalChanged()">
+		<input type="text" class="tight-form-input" style="width: 100px;" ng-model="ctrl.target.interval" spellcheck='false' placeholder="1" ng-blur="ctrl.intervalChanged()">
 	</li>
 
 </query-editor-row>
@@ -29,21 +21,3 @@
 	</ul>
 	<div class="clearfix"></div>
 </div>
-
-<div class="tight-form">
-	<ul class="tight-form-list">
-		<li class="tight-form-item query-keyword tight-form-align" style="width: 79px;">
-			Actions
-		</li>
-		<li class="tight-form-item last">
-			<button ng-if="ctrl.taskNotFound" ng-click="ctrl.createTask()" class="btn btn-success btn-mini">Create</button>
-			<button ng-if="!ctrl.taskNotFound" ng-click="ctrl.deleteTask()" class="btn btn-danger btn-mini">Delete</button>
-			<button ng-if="ctrl.isRunning" ng-click="ctrl.stopTask()" class="btn btn-secondary btn-mini">Stop</button>
-			<button ng-if="ctrl.isStopped" ng-click="ctrl.startTask()" class="btn btn-secondary btn-mini">Start</button>
-			<button ng-if="ctrl.isRunning" ng-click="ctrl.watchTask()" class="btn btn-secondary btn-mini">Watch</button>
-		</li>
-	</ul>
-	<div class="clearfix"></div>
-</div>
-
-

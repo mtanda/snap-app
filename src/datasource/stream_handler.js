@@ -1,4 +1,6 @@
 import moment from 'moment';
+import {Observable} from 'vendor/npm/rxjs/Rx';
+import 'vendor/npm/rxjs/add/observable/interval';
 import {Subject} from 'vendor/npm/rxjs/Subject';
 
 export class StreamHandler {
@@ -11,55 +13,69 @@ export class StreamHandler {
 
   start() {
     if (this.source) {
-      this.source.close();
-    }
-
-    var target = this.options.targets[0];
-    if (!target.taskId) {
       return;
     }
 
-    this.ds.getTask(target.taskId).then(task => {
-      if (!task) {
-        return;
-      }
+    var target = this.options.targets[0];
 
-      console.log('StreamHandler: start()', task);
+    console.log('StreamHandler: start()');
 
-      this.task = task;
-      var watchUrl = this.ds.url + '/v1/tasks/' + task.id + '/watch';
-      this.source = new EventSource(watchUrl);
-      this.source.onmessage = this.onMessage.bind(this);
-      this.source.onerror = this.onError.bind(this);
-      this.source.onopen = this.onOpen.bind(this);
-      this.source.onclose = this.onClose.bind(this);
-      this.metrics = {};
-    });
-  }
-
-  onMessage(evt) {
-    var data = JSON.parse(evt.data);
-    if (data.type === 'metric-event') {
-      this.processMetricEvent(data);
+    var interval = moment.duration(parseInt(target.interval, 10), 'seconds').asMilliseconds();
+    if (interval < 1000) {
+      interval = 1000;
     }
+
+    var self = this;
+    this.source = Observable.interval(interval)
+    .flatMap(function () {
+      var promise = new Promise(resolve => {
+        self.ds.request({ method: 'get', url: '/metrics' }).then(res => {
+          var targetMetrics = target.metrics.map(m => {
+            return m.name;
+          });
+          var result = res.data.split(/\n/).filter(l => {
+            return l.indexOf('#') !== 0;
+          }).map(l => {
+            return l.split(' ');
+          }).filter(m => {
+            return targetMetrics.includes(m[0]);
+          });
+          return resolve(result);
+        });
+      });
+      return Observable.fromPromise(promise);
+    })
+    .subscribe(
+      function (data) {
+        self.onNext.bind(self)(data);
+      },
+      function (error) {
+        self.onError.bind(self)(error);
+      },
+      function () {
+        self.onCompleted.bind(self)();
+      }
+    );
+
+    this.metrics = {};
   }
 
-  onError(evt) {
-    console.log('stream error', evt);
+  onNext(data) {
+    this.processMetricEvent(data);
   }
 
-  onClose(evt) {
-    console.log('stream closed', evt);
+  onError(error) {
+    console.log('stream error', error);
   }
 
-  onOpen(evt) {
-    console.log('stream opened', evt);
+  onCompleted() {
+    console.log('stream completed');
   }
 
   stop() {
-    console.log('Forcing event stream close');
+    console.log('Forcing event stream stop');
     if (this.source) {
-        this.source.close();
+      // TODO
     }
     this.source = null;
   }
@@ -73,22 +89,22 @@ export class StreamHandler {
     var startTime = endTime - (60 * 1 * 1000);
     var seriesList = [];
 
-    for (var i = 0; i < data.event.length; i++) {
-      var point = data.event[i];
-      var series = this.metrics[point.namespace];
+    for (var i = 0; i < data.length; i++) {
+      var point = data[i];
+      var series = this.metrics[point[0]];
       if (!series) {
-        series = {target: point.namespace, datapoints: []};
-        this.metrics[point.namespace] = series;
+        series = { target: point[0], datapoints: [] };
+        this.metrics[point[0]] = series;
       }
 
-      var time = new Date(point.timestamp).getTime();
-      series.datapoints.push([point.data, time]);
+      var time = new Date().getTime();
+      series.datapoints.push([point[1], time]);
       seriesList.push(series);
     }
 
     this.subject.next({
       data: seriesList,
-      range: {from: moment(startTime), to: moment(endTime)}
+      range: { from: moment(startTime), to: moment(endTime) }
     });
   }
 }
