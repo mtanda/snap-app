@@ -30,9 +30,13 @@ export class PrometheusPullDatasource {
     return Promise.resolve({data: []});
   }
 
-  getTask(taskId) {
-    return this.request({method: 'get', url: '/v1/tasks/' + taskId}).then(res => {
-      return res.data.body;
+  getMetrics() {
+    return this.request({method: 'get', url: '/metrics'}).then(res => {
+      return res.data.body.split(/\n/).filter(function(l) {
+        return l.indexOf('#') !== 0;
+      }).map(function(l) {
+        return l.split(' ')[0];
+      });
     }).catch(err => {
       if (err.status === 404) {
         return null;

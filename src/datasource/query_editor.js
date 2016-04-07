@@ -117,17 +117,8 @@ class PrometheusPullQueryCtrl extends QueryCtrl {
       return;
     }
 
-    this.datasource.getTask(this.target.taskId).then(task =>  {
-      if (!task) {
-        this.task = null;
-        this.target.taskId = '';
-        this.taskNotFound = true;
-        return;
-      }
-      this.taskNotFound = false;
-      this.task = task;
-      this.isRunning = task.task_state === 'Running';
-      this.isStopped = task.task_state === 'Stopped';
+    this.datasource.getMetrics().then(metrics =>  {
+      this.task = metrics;
     });
   }
 

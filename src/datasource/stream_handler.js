@@ -15,33 +15,20 @@ export class StreamHandler {
     }
 
     var target = this.options.targets[0];
-    if (!target.taskId) {
-      return;
-    }
 
-    this.ds.getTask(target.taskId).then(task => {
-      if (!task) {
-        return;
-      }
+    console.log('StreamHandler: start()', task);
 
-      console.log('StreamHandler: start()', task);
-
-      this.task = task;
-      var watchUrl = this.ds.url + '/v1/tasks/' + task.id + '/watch';
-      this.source = new EventSource(watchUrl);
-      this.source.onmessage = this.onMessage.bind(this);
-      this.source.onerror = this.onError.bind(this);
-      this.source.onopen = this.onOpen.bind(this);
-      this.source.onclose = this.onClose.bind(this);
-      this.metrics = {};
-    });
+    var watchUrl = this.ds.url + '/metrics';
+    this.source = new EventSource(watchUrl);
+    this.source.onmessage = this.onMessage.bind(this);
+    this.source.onerror = this.onError.bind(this);
+    this.source.onopen = this.onOpen.bind(this);
+    this.source.onclose = this.onClose.bind(this);
+    this.metrics = {};
   }
 
   onMessage(evt) {
-    var data = JSON.parse(evt.data);
-    if (data.type === 'metric-event') {
-      this.processMetricEvent(data);
-    }
+    this.processMetricEvent(data);
   }
 
   onError(evt) {
@@ -69,6 +56,8 @@ export class StreamHandler {
   }
 
   processMetricEvent(data) {
+    console.log(data); // DEBUG
+    return;
     var endTime = new Date().getTime();
     var startTime = endTime - (60 * 1 * 1000);
     var seriesList = [];
