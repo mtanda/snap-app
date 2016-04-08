@@ -26,10 +26,10 @@ export class StreamHandler {
     this.source = Observable
     .interval(1000)
     .flatMap(function() {
-      return Observable.fromPromise(function() {
-        return new Promise(function(resolve) {
-          return resolve('test');
-        });
+      return Observable.fromPromise(
+        new Promise(function(resolve) {
+          return resolve([['name', 100]]);
+        }));
         //var options = {
         //  url: '/metrics'
         //};
@@ -41,9 +41,8 @@ export class StreamHandler {
         //  promise.resolve(result);
         //});
         //return promise;
-      });
-    });
-    this.source.subscribe(
+      })
+    .subscribe(
       function (evt) {
         console.log(evt);
         self.onMessage.bind(self)(evt);
@@ -90,18 +89,18 @@ export class StreamHandler {
     var startTime = endTime - (60 * 1 * 1000);
     var seriesList = [];
 
-    //for (var i = 0; i < data.event.length; i++) {
-    //  var point = data.event[i];
-    //  var series = this.metrics[point.namespace];
-    //  if (!series) {
-    //    series = {target: point.namespace, datapoints: []};
-    //    this.metrics[point.namespace] = series;
-    //  }
+    for (var i = 0; i < data.length; i++) {
+      var point = data[i];
+      var series = this.metrics[point[0]];
+      if (!series) {
+        series = {target: point[0], datapoints: []};
+        this.metrics[point[0]] = series;
+      }
 
-    //  var time = new Date(point.timestamp).getTime();
-    //  series.datapoints.push([point.data, time]);
-    //  seriesList.push(series);
-    //}
+      var time = new Date().getTime();
+      series.datapoints.push([point[1], time]);
+      seriesList.push(series);
+    }
 
     this.subject.next({
       data: seriesList,
