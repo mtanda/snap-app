@@ -26,22 +26,18 @@ export class StreamHandler {
     this.source = Observable
     .interval(1000)
     .flatMap(function() {
-      return Observable.fromPromise(
-        new Promise(function(resolve) {
-          return resolve([['name', 100]]);
-        }));
-        //var options = {
-        //  url: '/metrics'
-        //};
-        //if (this.ds.withCredentials) {
-        //  options.withCredentials = true;
-        //}
-        //var promise = new Promise();
-        //self.ds.backendSrv.datasourceRequest(options).then(function(result) {
-        //  promise.resolve(result);
-        //});
-        //return promise;
-      })
+      var promise = new Promise(function(resolve) {
+        self.ds.request({ method: 'get', url: '/metrics' }).then(res => {
+          var result = res.data.split(/\n/).filter(function(l) {
+            return l.indexOf('#') !== 0;
+          }).map(function(l) {
+            return l.split(' ');
+          });
+          return resolve(result);
+        });
+      });
+      return Observable.fromPromise(promise);
+    })
     .subscribe(
       function (evt) {
         console.log(evt);
