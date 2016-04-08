@@ -6,6 +6,7 @@ export class PrometheusPullDatasource {
   constructor(instanceSettings, $http, backendSrv)  {
     this.instanceSettings = instanceSettings;
     this.url = instanceSettings.url;
+    this.withCredentials = instanceSettings.withCredentials;
     this.$http = $http;
     this.backendSrv = backendSrv;
     this.streamHandlers = {};
@@ -13,6 +14,9 @@ export class PrometheusPullDatasource {
 
   request(options) {
     options.url = this.url + options.url;
+    if (this.withCredentials) {
+      options.withCredentials = true;
+    }
     return this.backendSrv.datasourceRequest(options);
   }
 
@@ -54,12 +58,15 @@ export class PrometheusPullDatasource {
     }
 
     return this.request({method: 'get', url: '/metrics'}).then(res => {
-      if (!res.data || !res.data.body || !res.data.body) {
+      if (!res.data) {
         return [];
       }
 
-      this.metricsCache = res.data.body.map(value => {
-        return {text: value.namespace, value: value.namespace};
+      this.metricsCache = res.data.split(/\n/).filter(value => {
+        return value.indexOf('#') !== 0;
+      }).map(value => {
+        var metric = value.split(' ')[0];
+        return {text: metric, value: metric};
       });
 
       return this.metricsCache;
