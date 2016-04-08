@@ -1,4 +1,7 @@
 import moment from 'moment';
+//import {Observable} from 'vendor/npm/rxjs/Observable.js'
+import {Observable} from 'vendor/npm/rxjs/Rx';
+import 'vendor/npm/rxjs/add/observable/interval';
 import {Subject} from 'vendor/npm/rxjs/Subject';
 
 export class StreamHandler {
@@ -14,21 +17,48 @@ export class StreamHandler {
       this.source.close();
     }
 
-    var target = this.options.targets[0];
+    //var target = this.options.targets[0];
 
     console.log('StreamHandler: start()');
 
-    var watchUrl = this.ds.url + '/metrics';
-    this.source = new EventSource(watchUrl);
-    this.source.onmessage = this.onMessage.bind(this);
-    this.source.onerror = this.onError.bind(this);
-    this.source.onopen = this.onOpen.bind(this);
-    this.source.onclose = this.onClose.bind(this);
+    //var watchUrl = this.ds.url + '/metrics';
+    var self = this;
+    this.source = Observable
+    .interval(1000)
+    .flatMap(function() {
+      return Observable.fromPromise(function() {
+        return new Promise(function(resolve) {
+          return resolve('test');
+        });
+        //var options = {
+        //  url: '/metrics'
+        //};
+        //if (this.ds.withCredentials) {
+        //  options.withCredentials = true;
+        //}
+        //var promise = new Promise();
+        //self.ds.backendSrv.datasourceRequest(options).then(function(result) {
+        //  promise.resolve(result);
+        //});
+        //return promise;
+      });
+    });
+    this.source.subscribe(
+      function (evt) {
+        console.log(evt);
+        self.onMessage.bind(self)(evt);
+      },
+      function (evt) {
+        self.onError.bind(self)(evt);
+      },
+      function () {
+        self.onCloe.bind(self)({});
+      });
     this.metrics = {};
   }
 
   onMessage(evt) {
-    this.processMetricEvent(data);
+    this.processMetricEvent(evt);
   }
 
   onError(evt) {
@@ -56,24 +86,22 @@ export class StreamHandler {
   }
 
   processMetricEvent(data) {
-    console.log(data); // DEBUG
-    return;
     var endTime = new Date().getTime();
     var startTime = endTime - (60 * 1 * 1000);
     var seriesList = [];
 
-    for (var i = 0; i < data.event.length; i++) {
-      var point = data.event[i];
-      var series = this.metrics[point.namespace];
-      if (!series) {
-        series = {target: point.namespace, datapoints: []};
-        this.metrics[point.namespace] = series;
-      }
+    //for (var i = 0; i < data.event.length; i++) {
+    //  var point = data.event[i];
+    //  var series = this.metrics[point.namespace];
+    //  if (!series) {
+    //    series = {target: point.namespace, datapoints: []};
+    //    this.metrics[point.namespace] = series;
+    //  }
 
-      var time = new Date(point.timestamp).getTime();
-      series.datapoints.push([point.data, time]);
-      seriesList.push(series);
-    }
+    //  var time = new Date(point.timestamp).getTime();
+    //  series.datapoints.push([point.data, time]);
+    //  seriesList.push(series);
+    //}
 
     this.subject.next({
       data: seriesList,
