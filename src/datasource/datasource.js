@@ -20,26 +20,6 @@ export class PrometheusPullDatasource {
     return this.backendSrv.datasourceRequest(options);
   }
 
-  getMetricEntries() {
-    return this.request({method: 'get', url: '/metrics'}).then(res => {
-      return res.data.body.split(/\n/).filter(function(l) {
-        return l.indexOf('#') !== 0;
-      }).map(function(l) {
-        return l.split(' ')[0];
-      });
-    }).catch(err => {
-      if (err.status === 404) {
-        return null;
-      } else {
-        throw err;
-      }
-    });
-  }
-
-  emptyResult() {
-    return Promise.resolve({data: []});
-  }
-
   query(options) {
     var handler = this.streamHandlers[options.panelId];
     if (handler) {
@@ -52,21 +32,25 @@ export class PrometheusPullDatasource {
     return Promise.resolve(handler);
   }
 
-  getMetrics() {
+  getMetrics(target) {
+    if (target.url === '') {
+      return Promise.resolve([]);
+    }
+
     if (this.metricsCache) {
       return Promise.resolve(this.metricsCache);
     }
 
-    return this.request({method: 'get', url: '/metrics'}).then(res => {
+    return this.request({method: 'get', url: target.url + '/metrics'}).then(res => {
       if (!res.data) {
         return [];
       }
 
-      this.metricsCache = res.data.split(/\n/).filter(value => {
-        return value.indexOf('#') !== 0;
-      }).map(value => {
-        var metric = value.split(' ')[0];
-        return {text: metric, value: metric};
+      this.metricsCache = res.data.split(/\n/).filter(l => {
+        return l.indexOf('#') !== 0;
+      }).map(l => {
+        var metric = l.split(' ')[0];
+        return { text: metric, value: metric };
       });
 
       return this.metricsCache;

@@ -26,7 +26,7 @@ export class StreamHandler {
     .interval(kbn.interval_to_seconds(target.interval))
     .flatMap(function() {
       var promise = new Promise(function(resolve) {
-        self.ds.request({ method: 'get', url: '/metrics' }).then(res => {
+        self.ds.request({ method: 'get', url: target.url + '/metrics' }).then(res => {
           var targetMetrics = target.metrics.map(function(m) {
             return m.name;
           });
@@ -44,20 +44,20 @@ export class StreamHandler {
     })
     .subscribe(
       function (data) {
-        self.onMessage.bind(self)(data);
+        self.onNext.bind(self)(data);
       },
       function (error) {
         self.onError.bind(self)(error);
       },
       function () {
-        self.onCloe.bind(self)();
+        self.onCompleted.bind(self)();
       }
     );
 
     this.metrics = {};
   }
 
-  onMessage(data) {
+  onNext(data) {
     this.processMetricEvent(data);
   }
 
@@ -65,18 +65,14 @@ export class StreamHandler {
     console.log('stream error', error);
   }
 
-  onClose() {
-    console.log('stream closed');
-  }
-
-  onOpen(evt) {
-    console.log('stream opened', evt);
+  onCompleted() {
+    console.log('stream completed');
   }
 
   stop() {
-    console.log('Forcing event stream close');
+    console.log('Forcing event stream stop');
     if (this.source) {
-        this.source.close();
+      // TODO
     }
     this.source = null;
   }
@@ -86,15 +82,14 @@ export class StreamHandler {
   }
 
   processMetricEvent(data) {
-    var endTime = new Date().getTime();
-    var startTime = endTime - (60 * 1 * 1000);
+    var startTime = endTime = new Date().getTime(); // dummy
     var seriesList = [];
 
     for (var i = 0; i < data.length; i++) {
       var point = data[i];
       var series = this.metrics[point[0]];
       if (!series) {
-        series = {target: point[0], datapoints: []};
+        series = { target: point[0], datapoints: [] };
         this.metrics[point[0]] = series;
       }
 
@@ -105,7 +100,7 @@ export class StreamHandler {
 
     this.subject.next({
       data: seriesList,
-      range: {from: moment(startTime), to: moment(endTime)}
+      range: { from: moment(startTime), to: moment(endTime) }
     });
   }
 }

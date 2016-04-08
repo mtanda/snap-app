@@ -10,8 +10,14 @@ class PrometheusPullQueryCtrl extends QueryCtrl {
     this.uiSegmentSrv = uiSegmentSrv;
     this.removeMetricOption = this.uiSegmentSrv.newSegment({fake: true, value: '-- remove metric --'});
 
+    this.target.url = this.target.url || '';
     this.target.metrics = this.target.metrics || [];
     this.target.interval = this.target.interval || '1s';
+
+    this.urlSegment = this.uiSegmentSrv.newSegment({
+      value: this.target.url,
+      cssClass: "tight-form-item-xxlarge",
+    });
 
     this.metricSegments = this.target.metrics.map(item => {
       return this.uiSegmentSrv.newSegment({value: item.name, cssClass: 'last'});
@@ -21,7 +27,7 @@ class PrometheusPullQueryCtrl extends QueryCtrl {
   }
 
   getMetricSegments(segment) {
-    return this.datasource.getMetrics().then(metrics => {
+    return this.datasource.getMetrics(this.target).then(metrics => {
       var elements = metrics.map(item => {
         return this.uiSegmentSrv.newSegment({value: item.value});
       });
@@ -32,6 +38,10 @@ class PrometheusPullQueryCtrl extends QueryCtrl {
 
       return elements;
     });
+  }
+
+  urlChanged() {
+    // TODO
   }
 
   metricSegmentChanged(segment, index) {
