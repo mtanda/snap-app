@@ -1,5 +1,5 @@
 import moment from 'moment';
-//import {Observable} from 'vendor/npm/rxjs/Observable.js'
+import kbn from 'app/core/utils/kbn';
 import {Observable} from 'vendor/npm/rxjs/Rx';
 import 'vendor/npm/rxjs/add/observable/interval';
 import {Subject} from 'vendor/npm/rxjs/Subject';
@@ -14,24 +14,28 @@ export class StreamHandler {
 
   start() {
     if (this.source) {
-      this.source.close();
+      return;
     }
 
-    //var target = this.options.targets[0];
+    var target = this.options.targets[0];
 
     console.log('StreamHandler: start()');
 
-    //var watchUrl = this.ds.url + '/metrics';
     var self = this;
     this.source = Observable
-    .interval(1000)
+    .interval(kbn.interval_to_seconds(target.interval))
     .flatMap(function() {
       var promise = new Promise(function(resolve) {
         self.ds.request({ method: 'get', url: '/metrics' }).then(res => {
+          var targetMetrics = target.metrics.map(function(m) {
+            return m.name;
+          });
           var result = res.data.split(/\n/).filter(function(l) {
             return l.indexOf('#') !== 0;
           }).map(function(l) {
             return l.split(' ');
+          }).filter(function(m) {
+            return targetMetrics.includes(m[0]);
           });
           return resolve(result);
         });
@@ -39,29 +43,30 @@ export class StreamHandler {
       return Observable.fromPromise(promise);
     })
     .subscribe(
-      function (evt) {
-        console.log(evt);
-        self.onMessage.bind(self)(evt);
+      function (data) {
+        self.onMessage.bind(self)(data);
       },
-      function (evt) {
-        self.onError.bind(self)(evt);
+      function (error) {
+        self.onError.bind(self)(error);
       },
       function () {
-        self.onCloe.bind(self)({});
-      });
+        self.onCloe.bind(self)();
+      }
+    );
+
     this.metrics = {};
   }
 
-  onMessage(evt) {
-    this.processMetricEvent(evt);
+  onMessage(data) {
+    this.processMetricEvent(data);
   }
 
-  onError(evt) {
-    console.log('stream error', evt);
+  onError(error) {
+    console.log('stream error', error);
   }
 
-  onClose(evt) {
-    console.log('stream closed', evt);
+  onClose() {
+    console.log('stream closed');
   }
 
   onOpen(evt) {

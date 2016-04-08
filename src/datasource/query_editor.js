@@ -14,7 +14,7 @@ class PrometheusPullQueryCtrl extends QueryCtrl {
     this.target.interval = this.target.interval || '1s';
 
     this.metricSegments = this.target.metrics.map(item => {
-      return this.uiSegmentSrv.newSegment({value: item.namespace, cssClass: 'last'});
+      return this.uiSegmentSrv.newSegment({value: item.name, cssClass: 'last'});
     });
 
     this.metricSegments.push(this.uiSegmentSrv.newPlusButton());
@@ -55,7 +55,7 @@ class PrometheusPullQueryCtrl extends QueryCtrl {
 
     this.target.metrics = this.metricSegments.reduce((memo, item) => {
       if (!item.fake) {
-        memo.push({namespace: item.value});
+        memo.push({name: item.value});
       }
       return memo;
     }, []);
