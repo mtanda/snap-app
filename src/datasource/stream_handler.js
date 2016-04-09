@@ -31,7 +31,7 @@ export class StreamHandler {
     .interval(interval)
     .flatMap(function() {
       var promise = new Promise(function(resolve) {
-        self.ds.request({ method: 'get', url: target.url + '/metrics' }).then(res => {
+        self.ds.request({ method: 'get', url: '/metrics' }).then(res => {
           var targetMetrics = target.metrics.map(function(m) {
             return m.name;
           });

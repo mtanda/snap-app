@@ -32,16 +32,12 @@ export class PrometheusPullDatasource {
     return Promise.resolve(handler);
   }
 
-  getMetrics(target) {
-    if (target.url === '') {
-      return Promise.resolve([]);
-    }
-
+  getMetrics() {
     if (this.metricsCache) {
       return Promise.resolve(this.metricsCache);
     }
 
-    return this.request({method: 'get', url: target.url + '/metrics'}).then(res => {
+    return this.request({method: 'get', url: '/metrics'}).then(res => {
       if (!res.data) {
         return [];
       }
