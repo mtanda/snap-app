@@ -87,7 +87,8 @@ export class StreamHandler {
   }
 
   processMetricEvent(data) {
-    var startTime = endTime = new Date().getTime(); // dummy
+    var endTime = new Date().getTime();
+    var startTime = endTime; // dummy
     var seriesList = [];
 
     for (var i = 0; i < data.length; i++) {
