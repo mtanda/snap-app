@@ -21,9 +21,14 @@ export class StreamHandler {
 
     console.log('StreamHandler: start()');
 
+    var interval = moment.duration(target.interval, 'seconds').asMilliseconds();
+    if (interval < 1000) {
+      interval = 1000;
+    }
+
     var self = this;
     this.source = Observable
-    .interval(kbn.interval_to_seconds(target.interval))
+    .interval(interval)
     .flatMap(function() {
       var promise = new Promise(function(resolve) {
         self.ds.request({ method: 'get', url: target.url + '/metrics' }).then(res => {

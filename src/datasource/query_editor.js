@@ -10,7 +10,7 @@ class PrometheusPullQueryCtrl extends QueryCtrl {
     this.uiSegmentSrv = uiSegmentSrv;
     this.removeMetricOption = this.uiSegmentSrv.newSegment({fake: true, value: '-- remove metric --'});
 
-    this.target.url = this.target.url || '';
+    this.target.url = this.target.url || 'http://127.0.0.1:9090';
     this.target.metrics = this.target.metrics || [];
     this.target.interval = this.target.interval || '1s';
 
